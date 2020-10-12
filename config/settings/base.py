@@ -336,6 +336,13 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#beat-scheduler
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
+CELERY_BEAT_SCHEDULE = {
+    'check-btc-wallet-every-7-second': {
+        'task': 'grodt_prj.mychecker.tasks.check_btc_wallet',
+        'schedule': 7.0,
+    },
+}
+
 # django-allauth
 # ------------------------------------------------------------------------------
 # https://django-allauth.readthedocs.io/en/latest/configuration.html

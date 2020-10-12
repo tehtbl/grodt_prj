@@ -15,7 +15,13 @@ class MyCheckerModelFormGeneral(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(MyCheckerModelFormGeneral, self).__init__(*args, **kwargs)
 
-        # self.fields["domain"].required = False
+        self.fields["prvkey"].disabled = True
+        self.fields["pubkey"].disabled = True
+        self.fields["balance"].disabled = True
+
+        self.fields["prvkey"].required = False
+        self.fields["pubkey"].required = False
+        self.fields["balance"].required = False
 
         self.helper = FormHelper()
         self.helper.form_class = "form-horizontal"

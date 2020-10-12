@@ -83,6 +83,9 @@ stop_devel: ## stop development (devel) docker containers
 
 restart_devel: stop_devel clean_all start_devel ## restart development (devel) docker containers
 
+restart_beat: ## restarts celerybeat container
+		-docker-compose -f $(DOCKERFILE) restart celerybeat
+
 #
 # project test tasks
 #

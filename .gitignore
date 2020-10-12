@@ -336,3 +336,9 @@ db.sqlite3
 .idea/inspectionProfiles/
 !grodt_prj/lib/
 grodt_prj/staticfiles/
+
+grodt_prj/contrib/sites/migrations/00*.py
+grodt_prj/mychecker/migrations/00*.py
+grodt_prj/users/migrations/00*.py
+
+.idea/

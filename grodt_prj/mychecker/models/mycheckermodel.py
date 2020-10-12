@@ -9,6 +9,10 @@ class MyCheckerModel(MyAbstractModelObject):
 
     name = models.CharField(_("Name"), max_length=100, unique=True)
 
+    prvkey = models.CharField(_("Private Key"), max_length=65)
+    pubkey = models.CharField(_("Public Key"), max_length=42)
+    balance = models.FloatField(_("Balance"))
+
     class Meta:
         ordering = ["name"]
         app_label = "mychecker"
@@ -22,8 +26,8 @@ class MyCheckerModel(MyAbstractModelObject):
     def tags(self):
         return [
             {
-                "name": self.name,
-                "label": self.name,
+                "name": self.balance,
+                "label": self.balance,
                 "type": "tag-item",
                 "color": "warning"  # TODO
             }

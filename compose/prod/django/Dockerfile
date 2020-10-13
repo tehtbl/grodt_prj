@@ -1,7 +1,7 @@
-
 FROM python:3.8-slim-buster
 
 ENV PYTHONUNBUFFERED 1
+ENV MYUSER djuser
 
 RUN apt-get update \
   # dependencies for building Python packages
@@ -14,40 +14,41 @@ RUN apt-get update \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
-RUN addgroup --system django \
-    && adduser --system --ingroup django django
+RUN addgroup --system $MYUSER \
+    && adduser --system --ingroup $MYUSER $MYUSER
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
 RUN pip install --no-cache-dir -r /requirements/prod.txt \
     && rm -rf /requirements
 
-COPY ./compose/prod/django/entrypoint /entrypoint
+COPY ./compose/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
 RUN chmod +x /entrypoint
-RUN chown django /entrypoint
+RUN chown $MYUSER:$MYUSER /entrypoint
 
 COPY ./compose/prod/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
-RUN chown django /start
+RUN chown $MYUSER:$MYUSER /start
 
 COPY ./compose/prod/django/celery/worker/start /start-celeryworker
 RUN sed -i 's/\r$//g' /start-celeryworker
 RUN chmod +x /start-celeryworker
-RUN chown django /start-celeryworker
+RUN chown $MYUSER:$MYUSER /start-celeryworker
 
 COPY ./compose/prod/django/celery/beat/start /start-celerybeat
 RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
-RUN chown django /start-celerybeat
+RUN chown $MYUSER:$MYUSER /start-celerybeat
 
 COPY ./compose/prod/django/celery/flower/start /start-flower
 RUN sed -i 's/\r$//g' /start-flower
 RUN chmod +x /start-flower
-COPY --chown=django:django . /app
 
-USER django
+COPY --chown=$MYUSER:$MYUSER . /app
+
+USER $MYUSER
 
 WORKDIR /app
 

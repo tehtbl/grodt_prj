@@ -18,7 +18,7 @@ RUN apt-get update \
 COPY ./requirements /requirements
 RUN pip install -r /requirements/devel.txt
 
-COPY ./compose/prod/django/entrypoint /entrypoint
+COPY ./compose/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
 RUN chmod +x /entrypoint
 

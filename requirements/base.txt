@@ -59,3 +59,4 @@ requests==2.24.0
 whitenoise==5.2.0  # https://github.com/evansd/whitenoise
 
 bitcoinaddress==0.1.1
+django-extensions==3.0.5  # https://github.com/django-extensions/django-extensions

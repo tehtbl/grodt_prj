@@ -5,18 +5,20 @@ version: '3'
 #   grodt_prj_prod_db_data_backups: {}
 
 services:
+
   django: &django
     build:
       context: .
       dockerfile: ./compose/prod/django/Dockerfile
     image: grodt_prj_prod_django
+    container_name: django
     depends_on:
       - redis
     env_file:
       - ./.envs/prod
-    command: /start
     ports:
       - "127.0.0.1:8000:8000"
+    command: /start
 
   redis:
     image: redis:5.0
@@ -24,14 +26,28 @@ services:
   celeryworker:
     <<: *django
     image: grodt_prj_prod_celeryworker
+    container_name: celeryworker
+    depends_on:
+      - redis
+    ports: []
     command: /start-celeryworker
 
   celerybeat:
     <<: *django
     image: grodt_prj_prod_celerybeat
+    container_name: celerybeat
+    depends_on:
+      - redis
+    ports: []
     command: /start-celerybeat
 
   flower:
     <<: *django
     image: grodt_prj_prod_flower
+    container_name: flower
+    depends_on:
+      - redis
+      - celeryworker
+    ports:
+      - "127.0.0.1:5555:5555"
     command: /start-flower

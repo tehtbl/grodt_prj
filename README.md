@@ -20,11 +20,6 @@ git push -u origin main
 ```
 
 ```
-make start_devel
+make start_app
 make logs
-
-make clean_all
-
-make restart_devel
-make stop_devel
 ```

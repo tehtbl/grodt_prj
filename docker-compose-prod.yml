@@ -1,11 +1,9 @@
 version: '3'
 
-# volumes:
-#   grodt_prj_prod_db_data: {}
-#   grodt_prj_prod_db_data_backups: {}
+volumes:
+  grodt_prj_prod_db_data: {}
 
 services:
-
   django: &django
     build:
       context: .
@@ -16,6 +14,8 @@ services:
       - redis
     env_file:
       - ./.envs/prod
+    volumes:
+      - grodt_prj_prod_db_data:/data/
     ports:
       - "127.0.0.1:8000:8000"
     command: /start

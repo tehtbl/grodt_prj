@@ -1,44 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o errexit
 set -o pipefail
 set -o nounset
 
-while true; do sleep 1; done
+#while true; do sleep 1; done
 
-python3 manage.py makemigrations
-python3 manage.py migrate
-python3 manage.py load_initial_data
+INIT_FN="/data/.initialized"
 
-#python3 manage.py collectstatic --noinput
+if [[ ! -f "${INIT_FN}" ]];
+then
+  python3 manage.py collectstatic --noinput
 
-python3 manage.py runserver_plus 0.0.0.0:8000
+  python3 manage.py makemigrations
+  python3 manage.py migrate
+  python3 manage.py load_initial_data
 
-##!/usr/bin/env bash
-#
-#cd /app
-#
-#rm -rf *.sqlite3 *.egg-info .eggs build
-#for i in `find /app -iname "migrations" -type d`; do rm ${i}/00*; echo; done
-#find /app -iname "__pycache__" -type d -exec rm -rf \{ \} \;
-#
-##sleep 20 # wait for db to startup
-#
-#echo "Preparing Django"
-#python3 manage.py makemigrations
-#python3 manage.py migrate
-#python3 manage.py load_initial_data
-##python3 manage.py collectstatic
-#
-#echo "Starting Django"
-#MY_SECRET_KEY=$(LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | dd bs=56 count=1 2>/dev/null; echo;)
-#export MY_SECRET_KEY
-#
-#MY_LOGLEVEL="INFO"
-#export MY_LOGLEVEL
-#
-#python3 manage.py runserver 0.0.0.0:8080
-#
-##while true; do sleep 1; done
-#
-#exit 0
+  touch "${INIT_FN}"
+  echo "Django initialized"
+fi
+
+python3 manage.py runserver 0.0.0.0:8000

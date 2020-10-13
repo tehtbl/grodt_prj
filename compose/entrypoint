@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -o errexit
 set -o pipefail
 set -o nounset
 
-# N.B. If only .env files supported variable expansion...
-export CELERY_BROKER_URL="${REDIS_URL}"
-
-export DATABASE_URL="sqlite:///app/db.sqlite3"
+#export CELERY_BROKER_URL="${REDIS_URL}"
+#export DATABASE_URL="sqlite:///data/db.sqlite3"
+export DATABASE_NAME="/data/db.sqlite3"
+#export PYTHONPATH="/app/grodt_prj"
 
 exec "$@"

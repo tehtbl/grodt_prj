@@ -1,8 +1,9 @@
-from core.models import MyAbstractModelObject
 from django.db import models
 from django.utils.encoding import smart_text
 from django.utils.translation import gettext_lazy as _
+
 from users.models import MyUser
+from core.models import MyAbstractModelObject
 
 
 class MyCheckerModel(MyAbstractModelObject):

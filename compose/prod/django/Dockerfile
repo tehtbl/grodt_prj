@@ -3,6 +3,9 @@ FROM python:3.8-slim-buster
 ENV PYTHONUNBUFFERED 1
 ENV MYUSER djuser
 
+RUN addgroup --system $MYUSER \
+    && adduser --system --ingroup $MYUSER $MYUSER
+
 RUN apt-get update \
   # dependencies for building Python packages
   && apt-get install -y build-essential \
@@ -13,9 +16,6 @@ RUN apt-get update \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
-
-RUN addgroup --system $MYUSER \
-    && adduser --system --ingroup $MYUSER $MYUSER
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
@@ -45,11 +45,14 @@ RUN chown $MYUSER:$MYUSER /start-celerybeat
 COPY ./compose/prod/django/celery/flower/start /start-flower
 RUN sed -i 's/\r$//g' /start-flower
 RUN chmod +x /start-flower
+RUN chown $MYUSER:$MYUSER /start-flower
 
 COPY --chown=$MYUSER:$MYUSER . /app
 
-USER $MYUSER
+RUN mkdir /data
+RUN chown $MYUSER:$MYUSER /data
 
+USER $MYUSER
 WORKDIR /app
 
 ENTRYPOINT ["/entrypoint"]

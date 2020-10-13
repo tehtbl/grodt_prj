@@ -1,11 +1,6 @@
 version: '3'
 
-# volumes:
-#   devel_db_data: {}
-#   devel_db_data_backups: {}
-
 services:
-
   django: &django
     build:
       context: .
@@ -22,11 +17,11 @@ services:
       - "127.0.0.1:8000:8000"
     command: /start
 
-#  mailhog:
-#    image: mailhog/mailhog:v1.0.0
-#    container_name: mailhog
-#    ports:
-#      - "127.0.0.1:8025:8025"
+  mailhog:
+    image: mailhog/mailhog:v1.0.0
+    container_name: mailhog
+    ports:
+      - "127.0.0.1:8025:8025"
 
   redis:
     image: redis:5.0
@@ -38,7 +33,7 @@ services:
     container_name: celeryworker
     depends_on:
       - redis
-#      - mailhog
+      - mailhog
     ports: []
     command: /start-celeryworker
 
@@ -48,7 +43,7 @@ services:
     container_name: celerybeat
     depends_on:
       - redis
-#      - mailhog
+      - mailhog
     ports: []
     command: /start-celerybeat
 

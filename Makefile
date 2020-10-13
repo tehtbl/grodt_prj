@@ -5,7 +5,6 @@ SHELL := /bin/bash
 MY_DIR := $(shell echo $(shell cd "$(shell dirname "${BASH_SOURCE[0]}" )" && pwd ))
 APP_DIR := $(MY_DIR)/grodt_prj
 VENV_DIR := $(MY_DIR)/.venv3
-DOCKERFILE := $(MY_DIR)/docker-compose-devel.yml
 
 # Check that given variables are set and all have non-empty values,
 # die with an error otherwise.
@@ -31,11 +30,16 @@ endef
 # grep the version from the mix file
 # VERSION=$(shell ./version.sh)
 
+#MYENV := $(call check_defined, MYENV, environment not declared - should be 'PROD' or 'DEVEL')
+DOCKERFILE := $(MY_DIR)/docker-compose-devel.yml
+ifeq ($(MYENV),PROD)
+	DOCKERFILE := $(MY_DIR)/docker-compose-prod.yml
+endif
+
 # HELP
 # This will output the help for each task
 # thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
-.PHONY: help venv_install_requirements venv_new venv_remove clean_all clean_deep start_devel stop_devel restart_devel test
-
+.PHONY: help
 help: ## This help
 		@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
@@ -44,26 +48,30 @@ help: ## This help
 #
 # virtual env tasks
 #
-venv_install_requirements: venv_new ## install python packages
-		# test -d $(VENV_DIR) && $(VENV_DIR)/bin/pip install --no-cache -r $(APP_DIR)/requirements/local.txt
-		test -d $(VENV_DIR) && $(VENV_DIR)/bin/pip install -r requirements/devel.txt
+.PHONY: venv venv_mkdir venv_remove
+venv: venv_mkdir ## install python dependencies
+		test -d $(VENV_DIR) && $(VENV_DIR)/bin/pip install -r $(MY_DIR)/requirements/devel.txt
 
-venv_new: venv_remove ## create new venv
+venv_mkdir: venv_remove ## create new venv dir
 		test -d $(VENV_DIR) || python3 -m venv $(VENV_DIR)
 
-venv_remove: ## remove venv
+venv_remove: ## remove venv dir
 		-test -d $(VENV_DIR) && rm -rf $(VENV_DIR)
+
 
 #
 # clean up tasks
 #
-clean_deep: clean_all ## also removes all docker images, containers and volumes
-		-@docker rm -f $$(docker ps -a -q) 2>&1 >/dev/null
-		-@docker rmi -f $$(docker images -q) 2>&1 >/dev/null
+.PHONY: clean clean_deep clean_volumes
+clean_volumes: clean ## also removes all docker images, containers and volumes
 		-docker volume ls
 		-@docker volume prune -f 2>&1 >/dev/null
 
-clean_all: ## Clean up migrations, pychache and db in APP_DIR
+clean_deep: clean clean_volumes ## also removes all docker images, containers and volumes
+		-@docker rm -f $$(docker ps -a -q) 2>&1 >/dev/null
+		-@docker rmi -f $$(docker images -q) 2>&1 >/dev/null
+
+clean: ## Clean up migrations, pychache and db in APP_DIR
 		-sudo chown -R $$(sudo printenv SUDO_USER). .
 		-for i in `find $(APP_DIR) -iname "migrations" -type d`; do rm -rf $${i}/00*; echo; done 2>&1 >/dev/null
 		-find $(APP_DIR) -iname "__pycache__" -type d -exec rm -rf \{\} \; ; 2>&1 >/dev/null
@@ -73,15 +81,19 @@ clean_all: ## Clean up migrations, pychache and db in APP_DIR
 #
 # grodt_prj tasks
 #
-start_devel: ## start development (devel) docker containers
+.PHONY: build_app start_app stop_app restart_app restart_beat
+build_app: ## start docker containers
+		-docker-compose -f $(DOCKERFILE) build
+
+start_app: ## start docker containers
 		-docker-compose -f $(DOCKERFILE) up -d --build
 
-stop_devel: ## stop development (devel) docker containers
+stop_app: ## stop docker containers
 		-docker-compose -f $(DOCKERFILE) down
 		-docker-compose -f $(DOCKERFILE) down
 
 
-restart_devel: stop_devel clean_all start_devel ## restart development (devel) docker containers
+restart_app: stop_app clean start_app ## restart docker containers
 
 restart_beat: ## restarts celerybeat container
 		-docker-compose -f $(DOCKERFILE) restart celerybeat
@@ -89,6 +101,7 @@ restart_beat: ## restarts celerybeat container
 #
 # project test tasks
 #
+.PHONY: test
 test:  ## run all tests for project
 		@echo "    _    ____  ____    _           _             _           _   ___ _ "
 		@echo "   / \  |  _ \|  _ \  (_)___   ___| |_ __ _ _ __| |_ ___  __| | |__ \ |"
@@ -107,8 +120,12 @@ test:  ## run all tests for project
 #
 # other tasks
 #
+.PHONY: logs shell_django deploy
 logs: ## show Docker container logs
 		-docker-compose -f $(DOCKERFILE) logs -f
 
 shell_django: ## create a shell in django container
 		-docker-compose -f $(DOCKERFILE) exec django /bin/bash
+
+deploy: ## deploys the app to a specific server
+		-echo "TODO"
